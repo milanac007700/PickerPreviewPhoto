@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@color/color_purple">
+        <TextView
+            android:id="@+id/back"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:background="@drawable/font_button_bg"
+            android:layout_marginRight="15dp"
+            android:text="返回"/>
+
+        <TextView
+            android:id="@+id/album_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:text="相机胶卷"/>
+
+        <TextView
+            android:id="@+id/send_photos"
+            android:layout_width="85dp"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/green_btn_style"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:text="发送(1/9)"/>
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <GridView
+            android:id="@+id/photo_gridview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:numColumns="3" />
+
+        <FrameLayout
+            android:id="@+id/operate_layout"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/viewfinder_mask"
+            android:layout_gravity="bottom">
+
+            <TextView
+                android:id="@+id/select_album"
+                android:layout_width="90dp"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_marginLeft="15dp"
+                android:background="@drawable/btn_purple_style"
+                android:layout_gravity="center_vertical"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:text="全部照片"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left|bottom"
+                android:layout_marginLeft="95dp"
+                android:layout_marginBottom="10dp"
+                android:src="@mipmap/add_pic_jiao"/>
+
+            <TextView
+                android:id="@+id/preview_photos"
+                android:layout_width="75dp"
+                android:layout_height="30dp"
+                android:gravity="center"
+                android:layout_gravity="center_vertical|right"
+                android:layout_marginRight="15dp"
+                android:background="@drawable/btn_purple_style"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:enabled="false"
+                android:text="预览"/>
+
+        </FrameLayout>
+    </FrameLayout>
+
+</LinearLayout>

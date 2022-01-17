@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="line_e3">#e3e3e3</color>
+    <color name="white">#ffffff</color>
+    <color name="font_grey_m">#80808080</color>
+    <color name="label_green">#2fb266</color>
+    <color name="label_light_green">#22AC38</color>
+    <color name="font_grey_s">#aaaaaa</color>
+    <color name="color_red">#ff0000</color>
+    <color name="font_select">#66a9e7c8</color>
+    <color name="black">#000000</color>
+    <color name="gray">#AFAFAF</color>
+    <color name="color_purple">#3F51B5</color> <!-- 紫色-->
+    <color name="color_f9f9f9_bg">#f9f9f9</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="viewfinder_frame">#ffffff</color>
+</resources>
