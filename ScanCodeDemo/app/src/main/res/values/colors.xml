@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="devide_line">#CBCED2</color>
+    <color name="blue">#499BF7</color>
+    <color name="white">#ffffffff</color>
+    <color name="line_e3">#e3e3e3</color>
+    <color name="font_grey_m">#808080</color>
+    <color name="list_divider">#ededed</color>
+    <color name="title_divider">#bfbfbf</color>
+    <color name="font_grey_l">#202020</color>
+    <color name="dialog_bg">#F5F4F3</color>
+    <color name="whites">#ffffff</color>
+    <color name="grays">#818181</color>
+    <color name="gray_font">#818181</color>
+    <color name="common_title">#F9F9F9</color>
+    <color name="black">#000000</color>
+    <color name="pull_refresh_textview">#000000</color>
+    <color name="gold">#000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="refresh_head_bg">#2B2B2B</color>
+    <color name="red">#FF0000</color>
+    <color name="backColor">#2000</color>
+    <color name="detail_bgColor">#f5f5f5</color>
+    <color name="defaultTextColor">#666</color>
+    <!--<color name="viewfinder_frame">#2477ab</color>-->
+    <color name="viewfinder_frame">#ffffff</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="possible_result_points">#c0ffff00</color>
+    <!--<color name="result_view">#b0000000</color>-->
+    <color name="result_view">#3cb879</color>
+    <color name="font_green">#3cb879</color>
+    <color name="gray">#AFAFAF</color>
+    <color name="orange">#F99503</color>
+    <color name="deepcolor">#faaa5f</color>
+    <color name="shadowcolor">#333333</color>
+    <color name="naming">#ABABAB</color>
+    <color name="background">#272727</color>
+    <color name="orange_yellow">#9b9ba0</color>
+	<color name="wtransparent">#00FFFFFF</color>
+    <drawable name="semi_black">#80000000</drawable>
+
+    <color name="remote_connect_text">#FFe78018</color>
+    <color name="remote_disconnect_text">#FF901821</color>
+
+    <color name="color_purple">#3F51B5</color> <!-- 紫色-->
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="font_select">#66a9e7c8</color>
+    <color name="color_f9f9f9_bg">#f9f9f9</color>
+</resources>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/fragment_head1"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="45dp"
+    android:background="@color/color_f9f9f9_bg"
+    android:visibility="visible">
+
+    <TextView
+        android:id="@+id/fragment_head1_back"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/font_button_bg"
+        android:textColor="@color/skyblue"
+        android:gravity="center"
+        android:paddingLeft="15dip"
+        android:paddingRight="15dip"
+        android:textSize="15sp"
+        android:drawableLeft="@drawable/bg_back"
+        android:text=""/>
+
+    <TextView
+        android:id="@+id/fragment_head1_title"
+        android:layout_width="wrap_content"
+        android:maxWidth="150dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:singleLine="true"
+        android:textColor="@color/font_grey_l"
+        android:textSize="18sp"
+        android:visibility="invisible"/>
+
+
+    <LinearLayout
+        android:id="@+id/right_view_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:layout_alignParentRight="true"
+        android:gravity="center_vertical">
+
+
+        <TextView
+            android:id="@+id/fragment_head1_finish2"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:background="@drawable/font_button_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:singleLine="true"
+            android:textSize="15sp"
+            android:textColor="@color/skyblue"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/fragment_head1_finish"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:background="@drawable/font_button_bg"
+            android:gravity="center"
+            android:paddingLeft="10dp"
+            android:paddingRight="15dp"
+            android:singleLine="true"
+            android:textSize="15sp"
+            android:textColor="@color/skyblue"
+            android:visibility="gone"/>
+
+
+    </LinearLayout>
+
+</RelativeLayout>

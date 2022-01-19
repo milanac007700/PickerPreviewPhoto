@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/operate_list_bg"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/operate_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxHeight="85dp"
+        android:maxLines="2"
+        android:paddingBottom="10dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp"
+        android:paddingTop="10dp"
+        android:textColor="@color/font_grey_l"
+        android:textSize="16sp"
+        android:visibility="visible"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="@color/title_divider" />
+
+    <ListView
+        android:id="@+id/operate_listview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:paddingBottom="3dp"
+        android:scrollbarFadeDuration="2000" >
+    </ListView>
+
+    <TextView
+        android:id="@+id/operate_list_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@drawable/selector_bottom_left_right_radius4dp"
+        android:gravity="center"
+        android:text="确定"
+        android:textColor="@color/font_grey_l"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+</LinearLayout>

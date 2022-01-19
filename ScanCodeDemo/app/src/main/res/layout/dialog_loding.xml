@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+    <RelativeLayout
+        android:id="@+id/dialog_view__"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/dialog_selector"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="25dp" >
+
+        <ProgressBar
+            android:id="@+id/dialog_progress2"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_centerHorizontal="true"
+            android:indeterminateDrawable="@drawable/rotate_loading_github"
+            android:indeterminateDuration="1800" />
+
+        <TextView
+            android:id="@+id/dialog_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/dialog_progress2"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="15dp"
+            android:gravity="center"
+            android:textColor="#454648"
+            android:textSize="16dp" />
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+</LinearLayout>

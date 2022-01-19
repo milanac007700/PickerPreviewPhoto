@@ -108,26 +108,6 @@ public class CommonFunction {
     private static String SDDir = null;
 
     protected static void initExtStorageDir() {
-        String[] sfiles = { "/sdcard", "/storage/sdcard", "/storage/sdcard0", "/storage/sdcard1", "/storage/sdcard2", "/storage/sdcard-ext", "/storage/external_sd", "/storage/flash", "/storage/internal", "/storage/external", "/mnt/sdcard", "/mnt/sdcard0", "/mnt/sdcard1", "/mnt/sdcard2", "/mnt/sdcard-ext", "/mnt/external_sd", "/mnt/flash", "/mnt/internal", "/mnt/external" };
-        for (String sfile : sfiles) {
-            final File file = new File(sfile);
-            if ((file != null) && file.isDirectory() && file.exists() && file.canWrite()) {
-                File ffile = new File(sfile + "/CustomCamera");
-                if (ffile.exists() && file.isDirectory()) {
-                    if (ffile.canWrite()) {
-                        SDDir = sfile;
-                        return;
-                    }
-                } else {
-                    boolean ret = ffile.mkdirs();
-                    if (ret) {
-                        SDDir = sfile;
-                        return;
-                    }
-                }
-            }
-        }
-
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/CustomCamera/");
             if (path.exists() && path.isDirectory()) {

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="51dp"
+    android:paddingLeft="5dp"
+    android:paddingRight="5dp"
+    android:background="@drawable/item_white_bg">
+
+    <ImageView
+        android:id="@+id/operate_list_item_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="18dip"
+        android:layout_marginRight="9dip"
+        android:scaleType="center" />
+
+    <TextView
+        android:id="@+id/operate_list_item_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="12dp"
+        android:layout_toRightOf="@id/operate_list_item_img"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:textColor="@color/font_grey_m"
+        android:textSize="16sp"
+        android:text=""/>
+
+    <ImageView
+        android:id="@+id/operate_list_item_img_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="15dp"
+        android:scaleType="center" />
+
+    <View
+        android:id="@+id/operate_list_item_divider"
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/list_divider" />
+
+</RelativeLayout>

@@ -1,1 +1,8 @@
 include ':app'
+include ':VideoCrop'
+project(':VideoCrop').projectDir = new File('VideoCropDemo/app')
+include ':androidffmpeglibrary'
+project(':androidffmpeglibrary').projectDir = new File('VideoCropDemo/androidffmpeglibrary')
+
+include ':ScanCode'
+project(':ScanCode').projectDir = new File('ScanCodeDemo/app')

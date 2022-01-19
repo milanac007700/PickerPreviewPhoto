@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">VideoCropDemo</string>
+
+    <string name="generating">正在生成</string>
+    <string name="state_compress">正在压缩</string>
+    <string name="state_compress_error">压缩失败</string>
+    <string name="state_compress_end">压缩成功</string>
+
+    <string name="m_press_speak">按住说话</string>
+    <string name="m_press_video">按住拍</string>
+    <string name="m_loosen_end">松手发送</string>
+    <string name="m_send_cancel">取消发送</string>
+    <string name="m_loosen_cancel">松开，取消发送</string>
+    <string name="m_finger_slide_up">上滑，取消发送</string>
+    <string name="m_voice_too_short">录音时间太短</string>
+    <string name="m_video_too_short">拍摄时间太短</string>
+
+</resources>

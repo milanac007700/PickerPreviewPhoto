@@ -9,13 +9,19 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.milanac007.scancode.MainActivity;
+import com.tdr.tdrsipim.activity.CustomVideoCaptureActivity;
+
 import java.io.File;
 import java.util.List;
 
 public class HomePageActivity extends Activity implements View.OnClickListener{
 
     private Button photo_album;
-    private Button photo_camera;
+    private Button crop_header;
+    private Button smaill_video;
+    private Button btn_qrcode;
+
     private LinearLayout photo_layout;
     private int mMode = PickerAlbumActivity.PICKER_ALBUM_CODE;
 
@@ -24,10 +30,12 @@ public class HomePageActivity extends Activity implements View.OnClickListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home_page);
         photo_album = (Button)findViewById(R.id.photo_album);
-        photo_camera = (Button)findViewById(R.id.crop_header);
+        crop_header = (Button)findViewById(R.id.crop_header);
+        smaill_video = findViewById(R.id.smaill_video);
+        btn_qrcode = findViewById(R.id.btn_qrcode);
         photo_layout = (LinearLayout)findViewById(R.id.photo_layout);
 
-        View[] views = {photo_album, photo_camera};
+        View[] views = {photo_album, crop_header, smaill_video, btn_qrcode};
         for (View view: views){
             view.setOnClickListener(this);
         }
@@ -46,12 +54,26 @@ public class HomePageActivity extends Activity implements View.OnClickListener{
         startActivityForResult(intent, PickerAlbumActivity.PICKER_ALBUM_CODE);
     }
 
+    private void onClickSmallVideo(){
+        Intent intent = new Intent(this, CustomVideoCaptureActivity.class);
+        startActivityForResult(intent, CustomVideoCaptureActivity.VIDEO_CAPTURE_CODE);
+    }
+
+    private void onClickQrCode(){
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     @Override
     public void onClick(View v) {
         if(v.getId() == R.id.photo_album){
             onClickPhotoAlbum();
         }else if(v.getId() == R.id.crop_header){
             onClickCropHeader();
+        }else if(v.getId() == R.id.smaill_video) {
+            onClickSmallVideo();
+        }else if(v.getId() == R.id.btn_qrcode) {
+            onClickQrCode();
         }
     }
 

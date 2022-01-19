@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/txtResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dip"
+        android:singleLine="true"
+        android:textColor="#ff0000"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center" />
+
+    <com.myncic.scalecode.view.ViewfinderView
+    android:id="@+id/viewfinder_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_gravity="center"
+    android:background="@color/transparent" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+            android:background="#88e3e3e3"
+            android:orientation="horizontal" >
+
+            <RelativeLayout
+                android:id="@+id/codeCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent" >
+
+                <Button
+                    android:id="@+id/codereturn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="5dp"
+                    android:background="@drawable/back_btn" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/codereturn"
+                    android:gravity="center"
+                    android:singleLine="true"
+                    android:text="返回"
+                    android:textColor="#454648"
+                    android:textSize="14dp" />
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/modifyname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:text="二维码/条码"
+                android:textColor="#454648"
+                android:textSize="19dp" />
+
+            <Button
+                android:id="@+id/codeOk"
+                android:layout_width="55dp"
+                android:layout_height="30dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="10dp"
+                android:background="@drawable/refuse_btn"
+                android:text="确定"
+                android:textColor="@android:color/white"
+                android:textSize="13sp" >
+            </Button>
+        </RelativeLayout>
+
+         <TextView
+             android:id="@+id/timerecoder"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_alignParentBottom="true"
+             android:layout_centerHorizontal="true"
+             android:layout_marginBottom="150dp"
+             android:visibility="gone"
+             android:gravity="center"
+             android:textColor="#c5c5c5"
+             android:text="3秒后自动进入"
+             android:textSize="19dp" />
+ <ProgressBar
+        android:id="@+id/dialog_progress2"
+        android:layout_width="65dp"
+        android:layout_height="65dp"
+       	android:layout_centerInParent="true"
+        android:indeterminateDrawable="@drawable/rotate_loading_github"
+        android:indeterminateDuration="1800" 
+        android:visibility="gone"/>
+    </RelativeLayout>
+
+</FrameLayout>

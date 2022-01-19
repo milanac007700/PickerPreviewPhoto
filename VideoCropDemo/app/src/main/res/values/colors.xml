@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <drawable name="button_background_disabled">#E8E8E8</drawable>
+    <drawable name="button_background_normal">#ff5381c0</drawable>
+    <drawable name="button_background_pressed">#ff183983</drawable>
+
+    <drawable name="dial_num_button_normal">#ffffff</drawable>
+    <drawable name="dial_num_button_pressed">#f4f4f4</drawable>
+    <color name="dialog_divider_line">#E8E7E4</color>
+    <color name="dialog_bg">#F5F4F3</color>
+    <color name="dialog_text">#8F8C87</color>
+    <color name="color_f9f9f9_bg">#f9f9f9</color>
+    <color name="color_red">#ff0000</color>
+    <color name="font_select">#66a9e7c8</color>
+    <color name="transparent">#00000000</color>
+    <color name="skyblue">#87CEEB</color> <!-- 天蓝色 -->
+    <color name="font_grey_l">#202020</color>
+    <color name="white">#ffffffff</color>
+    <color name="line_e3">#e3e3e3</color>
+    <color name="head_icon_bg_female">#f491a0</color>
+    <color name="head_icon_bg_male">#8dd6e9</color>
+    <color name="highlight">#f3f3f3</color>
+    <color name="font_green">#3cb879</color>
+    <color name="font_grey_s">#aaaaaa</color>
+    <color name="font_grey_m">#808080</color>
+    <color name="fragment_bg">#f7f7f7</color>
+    <color name="color4f000">#4f000000</color>
+    <color name="color_f0f0f0">#f0f0f0</color>
+    <color name="camera_bg">#99000000</color>
+    <color name="label_green">#2fb266</color>
+    <color name="label_light_green">#22AC38</color>
+    <color name="greenyellow">#ADFF2F</color> <!-- 黄绿色 -->
+    <color name="viewfinder_frame">#2477ab</color>
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="possible_result_points">#c0ffff00</color>
+    <color name="result_view">#b0000000</color>
+    <color name="title_divider">#bfbfbf</color>
+    <color name="list_divider">#ededed</color>
+    <color name="color_purple">#3F51B5</color> <!-- 紫色-->
+    <color name="black">#000000</color>
+    <color name="gray">#AFAFAF</color>
+</resources>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/txtResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dip"
+        android:singleLine="true"
+        android:textColor="#ff0000"
+        android:textStyle="bold"
+        android:text="123"
+        android:visibility="gone" />
+
+    <SurfaceView
+        android:id="@+id/preview_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center" />
+
+    <com.google.zxing.qrcode.view.ViewfinderView
+        android:id="@+id/viewfinder_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:background="@color/transparent" />
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="50dp"
+
+            android:background="@color/color_f9f9f9_bg"
+            android:orientation="horizontal" >
+
+            <TextView
+                android:id="@+id/codeCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:textColor="#454648"
+                android:gravity="center"
+                android:paddingLeft="15dip"
+                android:paddingRight="15dip"
+                android:textSize="15sp"
+                android:background="@drawable/font_button_bg"
+                android:drawableLeft="@drawable/bg_back"
+                android:text=""/>
+
+            <TextView
+                android:id="@+id/modifyname"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:text="扫一扫"
+                android:textColor="#454648"
+                android:textSize="18sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:gravity="center_vertical"
+                android:layout_centerVertical="true">
+
+                <Button
+                    android:id="@+id/codeOk"
+                    android:layout_width="45dp"
+                    android:layout_height="30dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/refuse_btn"
+                    android:text="确定"
+                    android:textColor="@android:color/white"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/more_operation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/font_button_bg"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="15dp"
+                    android:drawableLeft="@drawable/more_operation"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/timerecoder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="gone"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:text="3秒后自动进入"
+            android:textSize="19dp" />
+        <ProgressBar
+            android:id="@+id/dialog_progress2"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:layout_centerInParent="true"
+            android:indeterminateDrawable="@drawable/rotate_loading_github"
+            android:indeterminateDuration="1800"
+            android:visibility="gone"/>
+    </RelativeLayout>
+
+</FrameLayout>

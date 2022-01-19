@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#f4f4f4"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="50dp"
+        android:background="#e3e3e3"
+        android:orientation="horizontal" >
+
+        <RelativeLayout
+            android:id="@+id/return_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent" >
+
+            <Button
+                android:id="@+id/choose_return"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="5dp"
+                android:background="@drawable/back_btn" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@+id/choose_return"
+                android:gravity="center"
+                android:singleLine="true"
+                android:text="返回"
+                android:textColor="#454648"
+                android:textSize="14dp" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/ring_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center_horizontal"
+            android:text="基站选择"
+            android:textColor="#454648"
+            android:textSize="19dp" />
+
+    </RelativeLayout>
+    
+      <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="#aeaeae"
+        android:src="@drawable/choose_ring" />
+
+    <RelativeLayout
+        android:id="@+id/choose_name_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:background="@drawable/choose_listitem"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp" >
+
+        <TextView
+            android:id="@+id/station_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="120dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:singleLine="true"
+            android:text="自定义基站"
+            android:textColor="#454648"
+            android:textSize="18sp" />
+
+ 
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:background="#aeaeae"
+        android:src="@drawable/choose_ring" />
+
+    <ListView
+        android:id="@+id/choose_list"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#f4f4f4"
+        android:divider="#aeaeae"
+        android:cacheColorHint="#00000000"
+        android:dividerHeight="0.5dp" />
+
+    <!-- android:autoLink="web|phone" -->
+
+</LinearLayout>

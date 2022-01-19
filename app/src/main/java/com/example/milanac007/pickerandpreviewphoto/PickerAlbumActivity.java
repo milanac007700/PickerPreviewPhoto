@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
 
 /**
  * Created by zqguo on 2016/12/7.
@@ -319,12 +321,26 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
      * 总而言之，就是Android不再允许在app中把file://Uri暴露给其他app，包括但不局限于通过Intent或ClipData等方法。
      *
      * 解决方案：谷歌提供了FileProvider，使用它可以生成content://乌里来替代file://URI。
+     * FileProvider会隐藏共享文件的真实路径，将它转换成content://开放的路径，因此还需要设定转换的规则。
+     * android:resource="@xml/provider_paths"这个属性指定了规则所在的文件。
+     *
+     * 转换规则：
+     * 替换前缀：把file://  替换为  content://${android:authorities}。
+     *
+     * TODO 适配 API30(Android10作用域存储)，否则：java.io.FileNotFoundException: open failed: EACCES (Permission denied)  /storage/emulated/0/CustomCamera/oxmRwHPoQP1/temp/202211811319_temp.jpg: open failed: EACCES (Permission denied)
      */
     public void cameraPhoto(){
         String fileName = CommonFunction.getDirUserTemp() + UUID.randomUUID().toString() + ".jpg";
         mCurrentCameraFile = new File(fileName);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(mCurrentCameraFile));
+
+        Uri photoUri = null;
+        if(Build.VERSION.SDK_INT < 24) {
+            Uri.fromFile(mCurrentCameraFile);
+        }else {
+            photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", mCurrentCameraFile);
+        }
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         startActivityForResult(intent, PHOTO_CODE);
     }
 

@@ -1,0 +1,84 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutitem"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/dialog_selector"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/dialogtitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center"
+        android:paddingBottom="15dp"
+        android:paddingTop="15dp"
+        android:text="提示"
+        android:textSize="19dp"
+        android:textColor="#454648" />
+
+    <LinearLayout
+        android:id="@+id/dialogcontent_linview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/dialogtitle"
+        android:orientation="vertical"
+        android:paddingBottom="40dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp" >
+
+        <TextView
+            android:id="@+id/dialogcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#454648"
+            android:textSize="17dp" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="0.5dp"
+        android:layout_below="@+id/dialogcontent_linview"
+        android:background="#aeaeae" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/dialogcontent_linview"
+        android:layout_marginTop="0.5dp"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/dialogsure"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.5"
+            android:background="@drawable/dialog_btn4"
+            android:padding="13dp"
+            android:text="重新定位"
+            android:textColor="#007aff"
+            android:textSize="19dp" />
+
+        <ImageView
+            android:layout_width="0.5dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:background="#b2b2b2" />
+
+        <Button
+            android:id="@+id/dialogcancel"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.5"
+            android:background="@drawable/dialog_btn5"
+            android:padding="13dp"
+            android:text="继续"
+            android:textColor="#007aff"
+            android:textSize="19dp" />
+    </LinearLayout>
+
+</RelativeLayout>

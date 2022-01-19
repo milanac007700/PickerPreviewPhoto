@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">智能扫描小工具</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- ercode -->
+    <string name="scan_tip">请将二维码置于取景框内扫描</string>
+    <string name="scan_retry">二维码扫描出错啦,请重新扫描</string>
+    <string name="scan_title">扫一扫</string>
+    <string name="sd_pic">相册</string>
+    <string name="sacn_dialog_title">是否打开链接?</string>
+    <string name="scan_url">http://www.baidu.com</string>
+    <string name="cancle">取消</string>
+    <string name="sure">确定</string>
+    <string name="camera_water">水印相机</string>
+    <string name="camera_more">更多</string>
+    <string name="camera_day">2014-04-14</string>
+    <string name="camera_hour">21:01</string>
+    <string name="camera_day_hour">2014-04-14 21:01</string>
+    <string name="camera_address">珠海</string>
+    <string name="camera_tep">23℃多云</string>
+    <string name="camera_pm">PM2.5 32</string>
+    <string name="camera_txt">静静的享受独自一个人的午后</string>
+    <string name="camera_ni">虫虫</string>
+    <string name="tiaozheng">旋转</string>
+    <string name="control">管理</string>
+    <string name="group">分组</string>
+    <string name="all">全部</string>
+    <string name="cnews">消息</string>
+    <string name="call">通话</string>
+    <string name="tv_phone">通讯录</string>
+    <string name="tv_group">群组</string>
+    <string name="tv_discuss">讨论组</string>
+    <string name="tv_life">生活服务</string>
+    <string name="friend_group">好友分组</string>
+    <string name="device">我的设备</string>
+    <string name="group_count">1/2</string>
+    <string name="child_feel">[在线]好好学习天天向上</string>
+    <string name="tv_call1">你通话过的联系人都会在这里出现</string>
+    <string name="tv_call2">快和朋友开始语音通话吧</string>
+    <string name="btn_call">找人聊聊</string>
+    <string name="comname">博文软件开发有限公司</string>
+    <string name="loadsign">智能运维云平台©2014.MYNCIC GROUP</string>
+    <string name="followme">快来用我拍拍，用我扫扫吧！</string>
+
+    <!--扫一扫-->
+    <string name="title_activity_scan_qr_code">扫一扫</string>
+    <string name="qc_code_close">关闭</string>
+    <string name="qr_code_select_picture">照片</string>
+    <string name="qr_code_open_flash_light">打开闪光灯</string>
+    <string name="qr_code_close_flash_light">关闭闪光灯</string>
+    <string name="qr_code_auto_scan_notification">将二维码放入框内，即可自动扫描</string>
+    <string name="qr_code_notification">提示</string>
+    <string name="qr_code_camera_not_open">您的相机功能好像没有打开哦~去\"设置>隐私>相机\"设置一下吧</string>
+    <string name="qr_code_positive_button_know">知道了</string>
+    <string name="qr_code_positive_button_confirm">确认</string>
+    <string name="qr_code_could_not_read_qr_code_from_picture">没有读出图片中的链接，换张图片试试吧~</string>
+    <string name="qr_code_could_not_read_qr_code_from_scanner">对不起，无法打开扫出的内容</string>
+    <string name="qr_code_camera_not_found">未检测到相机</string>
+</resources>

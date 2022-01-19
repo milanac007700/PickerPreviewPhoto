@@ -1,0 +1,55 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/choose_listitem"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/choose_name_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp" >
+
+        <TextView
+            android:id="@+id/station_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="110dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="15dp"
+            android:singleLine="true"
+            android:textColor="#454648"
+            android:textSize="18sp" />
+
+        <TextView
+            android:id="@+id/station_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="20dp"
+            android:gravity="center_vertical|left"
+            android:singleLine="true"
+            android:text="距离1948米"
+            android:textColor="#454648"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/station_area"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/station_name"
+            android:layout_marginBottom="10dp"
+            android:layout_marginRight="120dp"
+            android:layout_marginTop="7dp"
+            android:gravity="center_vertical"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:singleLine="true"
+            android:text="红花岗区新蒲片区"
+            android:textColor="#454648"
+            android:textSize="17sp" />
+    </RelativeLayout>
+
+</LinearLayout>
