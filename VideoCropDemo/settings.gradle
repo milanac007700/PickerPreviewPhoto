@@ -1,1 +1,4 @@
-include ':app',':androidffmpeglibrary'
+include ':app'
+include ':FFmpeg'
+project(':FFmpeg').projectDir = new File('./ffmpeg-android-demo/app')
+

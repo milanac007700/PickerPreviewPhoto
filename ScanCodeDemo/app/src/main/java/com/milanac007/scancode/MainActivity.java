@@ -20,7 +20,7 @@ public class MainActivity extends Activity implements View.OnClickListener{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main2);
+        setContentView(R.layout.scancode_layout);
         myQRcodeView = (TextView)findViewById(R.id.myQRcode);
         View scanQRcodeView = findViewById(R.id.scanQRcode);
         scanResult = (TextView)findViewById(R.id.scanResult);

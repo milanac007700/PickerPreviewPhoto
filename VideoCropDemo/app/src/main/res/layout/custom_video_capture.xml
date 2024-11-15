@@ -7,7 +7,7 @@
     <include layout="@layout/fragment_head1" />
 
 
-    <com.tdr.tdrsipim.library.CustomVideoCaptureView
+    <com.milanac007.demo.videocropdemo.ui.CustomVideoCaptureView
         android:id="@+id/video_capture_preview"
         android:layout_marginTop="45dp"
         android:layout_width="match_parent"
@@ -22,13 +22,13 @@
         android:layout_marginTop="300dp"
         android:background="@color/white">
 
-        <com.tdr.tdrsipim.library.CustomHorizonalProgressBar
+        <com.milanac007.demo.videocropdemo.ui.CustomHorizonalProgressBar
             android:id="@+id/progressBar"
             android:layout_width="match_parent"
             android:layout_height="3dp"
             style="@android:style/Widget.ProgressBar.Horizontal"/>
 
-        <com.tdr.tdrsipim.library.VideoCaptureButton
+        <com.milanac007.demo.videocropdemo.ui.VideoCaptureButton
             android:id="@+id/video_capture_button"
             android:layout_width="80dp"
             android:layout_height="80dp"

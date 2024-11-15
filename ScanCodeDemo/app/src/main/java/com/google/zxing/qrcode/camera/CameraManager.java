@@ -16,14 +16,25 @@
 package com.google.zxing.qrcode.camera;
 
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Size;
+import android.view.Gravity;
+import android.view.Surface;
 import android.view.SurfaceHolder;
+import android.view.TextureView;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+
+import com.milanac007.scancode.StatusBarUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -60,6 +71,10 @@ public final class CameraManager {
 
   private final Context context;
   private final CameraConfigurationManager configManager;
+  private int screenWidth;
+  private int screenHeight;
+  private int previewWidth;
+  private int previewHeight;
   private Camera camera;
   private Rect framingRect;
   private Rect framingRectInPreview;
@@ -73,6 +88,7 @@ public final class CameraManager {
   private final PreviewCallback previewCallback;
   /** Autofocus callbacks arrive here, and are dispatched to the Handler which requested them. */
   private final AutoFocusCallback autoFocusCallback;
+  private boolean mIsHorizonal;
 
   /**
    * Initializes this static object with the Context of the calling Activity.
@@ -90,7 +106,7 @@ public final class CameraManager {
    *
    * @return A reference to the CameraManager singleton.
    */
-  public static CameraManager get() {
+  public synchronized static CameraManager get() {
     return cameraManager;
   }
 
@@ -108,6 +124,97 @@ public final class CameraManager {
 
     previewCallback = new PreviewCallback(configManager, useOneShotPreviewCallback);
     autoFocusCallback = new AutoFocusCallback();
+
+
+    WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    int rotation = windowManager.getDefaultDisplay().getRotation();
+    mIsHorizonal = false;
+    if (rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) {
+      mIsHorizonal = true;
+    }
+    if (!mIsHorizonal) {
+      screenWidth = getScreenWidth();
+      screenHeight = getScreenHeight() + StatusBarUtil.getStatusBarHeight(context);
+    } else {
+      screenWidth = getScreenWidth() + StatusBarUtil.getStatusBarHeight(context);;
+      screenHeight = getScreenHeight();
+    }
+  }
+
+  public int getScreenWidth() { // 每次都重新获取， 适用于screenOrientation="sensor"，且发生了屏幕旋转的情形
+    DisplayMetrics dm = context.getResources().getDisplayMetrics();
+    return dm.widthPixels;
+  }
+
+  public int getScreenHeight() {
+    DisplayMetrics dm = context.getResources().getDisplayMetrics();
+    return dm.heightPixels;
+  }
+
+  private Size getBestPreviewSize(Camera.Parameters parameters) {
+    int viewWidth = mIsHorizonal ? screenWidth: screenHeight;
+    int viewHeight = mIsHorizonal ? screenHeight: screenWidth;
+    List<Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
+    int bestPreviewWidth = 1920;
+    int bestPreviewHeight = 1080;
+    int diffs = Integer.MAX_VALUE;
+    for (Camera.Size previewSize: supportedPreviewSizes) {
+      int newDiffs = Math.abs(previewSize.width - viewWidth) + Math.abs(previewSize.height - viewHeight);
+      if (newDiffs == 0) {
+        bestPreviewWidth = previewSize.width;
+        bestPreviewHeight = previewSize.height;
+        break;
+      }
+      if (diffs > newDiffs) {
+        bestPreviewWidth = previewSize.width;
+        bestPreviewHeight = previewSize.height;
+        diffs = newDiffs;
+      }
+    }
+    Log.i(TAG, "最佳预览宽高：" + bestPreviewWidth + ", " + bestPreviewHeight);
+    return new Size(bestPreviewWidth, bestPreviewHeight);
+  }
+
+  public void setPreviewSize(int previewWidth, int previewHeight) {
+    this.previewWidth = previewWidth;
+    this.previewHeight = previewHeight;
+  }
+
+  public FrameLayout.LayoutParams getLayoutParams(int previewWidth, int previewHeight) {
+    float scale = previewWidth * 1.0f / previewHeight;
+    // 以屏幕高为布局高，计算布局宽: 竖屏手机的高度对应相机预览尺寸的宽度
+    int layout_height = screenHeight;
+    int layout_width = (int)(layout_height * 1.0f /  scale);
+    if (mIsHorizonal) {
+      layout_width = screenWidth;
+      layout_height = (int)(layout_width * 1.0f / scale);
+    }
+    FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(layout_width, layout_height);
+    layoutParams.gravity = Gravity.CENTER;//相机水平居中
+    return layoutParams;
+  }
+
+  public void setCameraDisplayOrientation(Context context, int cameraId, Camera camera) {
+    Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+    Camera.getCameraInfo(cameraId, cameraInfo);
+    WindowManager windowManager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+    int orientation = windowManager.getDefaultDisplay().getOrientation();
+    int degree = 0;
+    switch (orientation) {
+      case Surface.ROTATION_0: degree = 0;break;
+      case Surface.ROTATION_90: degree = 90;break;
+      case Surface.ROTATION_180: degree = 180;break;
+      case Surface.ROTATION_270: degree = 270;break;
+    }
+
+    int result;
+    if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+      result = (cameraInfo.orientation + degree) % 360;
+      result = (360 - result) % 360; // compensate the mirror
+    } else {
+      result = (cameraInfo.orientation - degree + 360) % 360;
+    }
+    camera.setDisplayOrientation(result);
   }
 
   /**
@@ -116,19 +223,89 @@ public final class CameraManager {
    * @param holder The surface object which the camera will draw preview frames into.
    * @throws IOException Indicates the camera driver failed to open.
    */
-  public void openDriver(SurfaceHolder holder) throws IOException {
+  public void openDriver(SurfaceHolder holder, TextureView textureView) throws IOException {
     if (camera == null) {
       camera = Camera.open();
       if (camera == null) {
         throw new IOException();
       }
-//      camera.setDisplayOrientation(90);
-      camera.setPreviewDisplay(holder);
+
+//      Camera.Parameters parameters = camera.getParameters();
+//      Size bestPreviewSize = getBestPreviewSize(parameters);
+//      parameters.setPreviewSize(bestPreviewSize.getWidth(), bestPreviewSize.getHeight());
+//      setPreviewSize(bestPreviewSize.getWidth(), bestPreviewSize.getHeight());
+//      // 这里直接设置为预览尺寸，因为发现有些手机的拍照尺寸大于预览尺寸，导致输出的图片和预览拍照那一刻不一致。
+//      parameters.setPictureSize(bestPreviewSize.getWidth(), bestPreviewSize.getHeight());
+//      setCameraDisplayOrientation(context, 0, camera);
+//      camera.setParameters(parameters);
+
+      if (holder != null) {
+        camera.setPreviewDisplay(holder);
+      }
+
+      if (textureView != null) {
+//        textureView.setLayoutParams(getLayoutParams());
+//        textureView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,FrameLayout.LayoutParams.MATCH_PARENT));
+//        int layout_width = textureView.getLayoutParams().width;
+//        int layout_height = textureView.getLayoutParams().height;
+//        if (layout_width >  screenWidth || layout_height > screenHeight) { // matrix变换，使画面拉近但不拉伸
+//          Matrix matrix = new Matrix();
+//          RectF viewRect = new RectF(0, 0, screenWidth, screenHeight);
+//          RectF bufferRect = new RectF(0, 0, layout_width, layout_height);
+//          float centerX = viewRect.centerX();
+//          float centerY = viewRect.centerY();
+//          bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY()); //将预览图像外框bufferRect的中心点移动到手机屏幕的物理中心点centerX, centerY
+//          matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);//矩阵变换,从viewRect变换到bufferRect，表现为画面拉近，但不拉伸变形
+//          float scale = Math.max( //找到水平和竖直方向最大的缩放倍数
+//                  (float) screenWidth / layout_width,
+//                  (float) screenHeight / layout_height
+//          );
+//          matrix.postScale(scale, scale, centerX, centerY); // 以(centerX, centerY)为中心，x、y方向各缩放scale倍
+//          textureView.setTransform(matrix);
+//        }
+        camera.setPreviewTexture(textureView.getSurfaceTexture());
+      }
+      //TODO
+//      if (!initialized) {
+//        initialized = true;
+//        configManager.initFromCameraParameters(camera);
+//      }
+//      configManager.setDesiredCameraParameters(camera);
+
+
       if (!initialized) {
         initialized = true;
-        configManager.initFromCameraParameters(camera);
+        configManager.initFromCameraParameters2(camera);
       }
-      configManager.setDesiredCameraParameters(camera);
+      configManager.setDesiredCameraParameters2(camera);
+
+      Point screenResolution = configManager.getScreenResolution();
+      screenWidth = screenResolution.x;
+      screenHeight = screenResolution.y;
+      Point cameraResolution = configManager.getCameraResolution();
+
+      if (textureView != null) {
+        textureView.setLayoutParams(getLayoutParams(cameraResolution.x, cameraResolution.y));
+        int layout_width = textureView.getLayoutParams().width;
+        int layout_height = textureView.getLayoutParams().height;
+        if (layout_width >  screenWidth || layout_height > screenHeight) { // matrix变换，使画面拉近但不拉伸
+          Matrix matrix = new Matrix();
+          RectF viewRect = new RectF(0, 0, screenWidth, screenHeight);
+          RectF bufferRect = new RectF(0, 0, layout_width, layout_height);
+          float centerX = viewRect.centerX();
+          float centerY = viewRect.centerY();
+          bufferRect.offset(centerX - bufferRect.centerX(), centerY - bufferRect.centerY()); //将预览图像外框bufferRect的中心点移动到手机屏幕的物理中心点centerX, centerY
+          matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);//矩阵变换,从viewRect变换到bufferRect，表现为画面拉近，但不拉伸变形
+          float scale = Math.max( //找到水平和竖直方向最大的缩放倍数
+                  (float) screenWidth / layout_width,
+                  (float) screenHeight / layout_height
+          );
+          matrix.postScale(scale, scale, centerX, centerY); // 以(centerX, centerY)为中心，x、y方向各缩放scale倍
+          textureView.setTransform(matrix);
+        }
+//        camera.setPreviewTexture(textureView.getSurfaceTexture());
+      }
+
       FlashlightManager.enableFlashlight();
     }
   }
@@ -258,6 +435,12 @@ public final class CameraManager {
    */
   public Rect getFramingRect() {
     Point screenResolution = configManager.getScreenResolution();
+    // TODO
+    if (screenResolution == null) {
+      screenResolution = new Point(screenWidth, screenHeight);
+    }
+
+
     if (framingRect == null) {
       if (camera == null) {
         return null;
@@ -339,7 +522,7 @@ public final class CameraManager {
    * @param height The height of the image.
    * @return A PlanarYUVLuminanceSource instance.
    */
-  public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int height) {
+  public PlanarYUVLuminanceSource buildLuminanceSource_bak(byte[] data, int width, int height) {
     Rect rect = getFramingRectInPreview();
     int previewFormat = configManager.getPreviewFormat();
     String previewFormatString = configManager.getPreviewFormatString();
@@ -371,6 +554,25 @@ public final class CameraManager {
     }
     throw new IllegalArgumentException("Unsupported picture format: " +
         previewFormat + '/' + previewFormatString);
+  }
+
+  /**
+   * A factory method to build the appropriate LuminanceSource object based on
+   * the format of the preview buffers, as described by Camera.Parameters.
+   *
+   * @param data A preview frame.
+   * @param width The width of the image.
+   * @param height The height of the image.
+   * @return A PlanarYUVLuminanceSource instance.
+   */
+  public PlanarYUVLuminanceSource buildLuminanceSource(byte[] data, int width, int height) {
+    Rect rect = getFramingRectInPreview();
+    if (rect == null) {
+      return null;
+    }
+    // Go ahead and assume it's YUV rather than die.
+    return new PlanarYUVLuminanceSource(data, width, height, rect.left, rect.top, rect.width(),
+            rect.height());
   }
 
 }

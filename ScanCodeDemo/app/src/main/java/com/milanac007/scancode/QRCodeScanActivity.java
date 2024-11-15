@@ -1,12 +1,15 @@
 package com.milanac007.scancode;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -21,6 +24,7 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ProgressBar;
@@ -29,6 +33,14 @@ import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
+import com.google.zxing.qrcode.camera.CameraManager;
+import com.google.zxing.qrcode.decoding.CaptureActivityHandler;
+import com.google.zxing.qrcode.decoding.DecodeImageCallback;
+import com.google.zxing.qrcode.decoding.DecodeImageThread;
+import com.google.zxing.qrcode.decoding.DecodeManager;
+import com.google.zxing.qrcode.decoding.InactivityTimer;
+import com.google.zxing.qrcode.view.LoadingDialog;
+import com.google.zxing.qrcode.view.ViewfinderView;
 
 import org.json.JSONArray;
 
@@ -39,25 +51,21 @@ import java.util.Vector;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import com.google.zxing.qrcode.camera.CameraManager;
-import com.google.zxing.qrcode.decoding.CaptureActivityHandler;
-import com.google.zxing.qrcode.decoding.DecodeImageCallback;
-import com.google.zxing.qrcode.decoding.DecodeImageThread;
-import com.google.zxing.qrcode.decoding.DecodeManager;
-import com.google.zxing.qrcode.decoding.InactivityTimer;
-import com.google.zxing.qrcode.view.LoadingDialog;
-import com.google.zxing.qrcode.view.ViewfinderView;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 /**
  * Created by zqguo on 2016/10/27.
  */
 
-public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callback,View.OnClickListener {
+public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callback, TextureView.SurfaceTextureListener, View.OnClickListener {
     public static final int QRCODE_MASK = 0;
 
     private CaptureActivityHandler handler;
     private ViewfinderView viewfinderView;
     private boolean hasSurface;
+    private boolean hasPermission;
     private Vector<BarcodeFormat> decodeFormats;
     private String characterSet;
     private TextView txtResult,timerecoder;
@@ -88,6 +96,8 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
     private String result;
     JSONArray sendJson;
     boolean mFlashLight = false; //闪关灯开关状态
+    private SurfaceView surfaceView;
+    private TextureView textureView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,6 +128,11 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
         }).start();
 
         CameraManager.init(getApplication());
+        if(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 0);
+        } else {
+            hasPermission = true;
+        }
 
         viewfinderView = (ViewfinderView) findViewById(R.id.viewfinder_view);
         txtResult = (TextView) findViewById(R.id.txtResult);
@@ -136,6 +151,17 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
 
         mQrCodeExecutor = Executors.newSingleThreadExecutor();
         mHandler = new WeakHandler(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            hasPermission = true;
+//            SurfaceHolder surfaceHolder = surfaceView.getHolder();
+//            initCamera(surfaceHolder);
+            initCamera(null, textureView);
+        }
     }
 
     private void setScanWidthHeight(){
@@ -312,7 +338,9 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
             handler.quitSynchronously();
             handler = null;
         }
-        CameraManager.get().closeDriver();
+        if (CameraManager.get() != null) {
+            CameraManager.get().closeDriver();
+        }
     }
 
     @Override
@@ -326,13 +354,19 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.preview_view);
-        SurfaceHolder surfaceHolder = surfaceView.getHolder();
+//        surfaceView = (SurfaceView) findViewById(R.id.preview_view);
+//        SurfaceHolder surfaceHolder = surfaceView.getHolder();
+//        if (hasSurface) {
+//            initCamera(surfaceHolder);
+//        } else {
+//            surfaceHolder.addCallback(this);
+//            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+//        }
+
+        textureView = findViewById(R.id.preview_textureview);
+        textureView.setSurfaceTextureListener(this);
         if (hasSurface) {
-            initCamera(surfaceHolder);
-        } else {
-            surfaceHolder.addCallback(this);
-            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            initCamera(null, textureView);
         }
         decodeFormats = null;
         characterSet = null;
@@ -390,15 +424,18 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
         }
     }
 
-    private void initCamera(SurfaceHolder surfaceHolder) {
+    private void initCamera(SurfaceHolder surfaceHolder, TextureView textureView) {
+        if (!hasPermission || !hasSurface)
+            return;
+
         try {
-            CameraManager.get().openDriver(surfaceHolder);
+            CameraManager.get().openDriver(surfaceHolder, textureView);
         } catch (IOException ioe) {
             return;
         } catch (RuntimeException e) {
             Toast.makeText(this, "打开摄像头失败, 请确认开启相应权限", Toast.LENGTH_SHORT).show();
             finish();
-//            return;
+            return;
         }
         if (handler == null) {
             handler = new CaptureActivityHandler(this, decodeFormats,characterSet);
@@ -415,9 +452,8 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
     public void surfaceCreated(SurfaceHolder holder) {
         if (!hasSurface) {
             hasSurface = true;
-            initCamera(holder);
+            initCamera(holder, null);
         }
-
     }
 
     @Override
@@ -577,6 +613,30 @@ public class QRCodeScanActivity extends Activity implements SurfaceHolder.Callba
             mHandler.sendEmptyMessage(MSG_DECODE_FAIL);
         }
     };
+
+    @Override
+    public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
+        if (!hasSurface) {
+            hasSurface = true;
+            initCamera(null, textureView);
+        }
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
+
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
+        hasSurface = false;
+        return false;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
+
+    }
 
     private static class WeakHandler extends Handler {
         private WeakReference<QRCodeScanActivity> mWeakQrCodeActivity;

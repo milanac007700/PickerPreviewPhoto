@@ -1,7 +1,6 @@
 package com.example.milanac007.pickerandpreviewphoto;
 
 import android.content.Context;
-import android.content.Loader;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -10,17 +9,24 @@ import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.os.HandlerThread;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LruCache;
 
 import com.jakewharton.disklrucache.DiskLruCache;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -28,14 +34,14 @@ import java.security.NoSuchAlgorithmException;
  * Created by zqguo on 2016/12/8.
  */
 public class CacheManager {
+    private static final String TAG = "CacheManager";
     private static CacheManager mInstance = null;
     private LruCache<String, Bitmap> mMemoryCache;
     private DiskLruCache mDiskLruCache;
     public final Object mDiskCacheLock = new Object();
-    private static final int DISK_CACHE_SIZE = 1024 * 0124 *10; //10M
+    private static final int DISK_CACHE_SIZE = 1024 * 1024 *50; //10M -> 50M
     private static final String DISK_CACHE_SUBDIR = "thumbnails";
     private boolean mDiskCacheStarting = true;
-    private HandlerThread addBitmapToCacheHandlerThread;
 
     public static CacheManager getInstance(){
         if(mInstance == null){
@@ -67,7 +73,7 @@ public class CacheManager {
 
     // Creates a unique subdirectory of the designated app cache directory. Tries to use external
     // but if not mounted, falls back on internal storage.
-    public File getDiskCecheDir(Context context, String uniqueName){
+    public File getDiskCacheDir(Context context, String uniqueName){
 
         // Check if media is mounted or storage is built-in, if so, try and use external cache dir
         // otherwise use internal cache dir
@@ -87,15 +93,25 @@ public class CacheManager {
         return 1;
     }
 
-    class InitDiskCacheTask extends AsyncTask<File, Void, Void> {
+    static class InitDiskCacheTask extends AsyncTask<File, Void, Void> {
+        private final WeakReference<CacheManager> reference;
+
+        public InitDiskCacheTask() {
+            super();
+            reference = new WeakReference<>(CacheManager.getInstance());
+        }
+
         @Override
         protected Void doInBackground(File... params) {
-            synchronized (mDiskCacheLock){
-                File chcheDir = params[0];
+            CacheManager cacheManager = reference.get();
+            if(cacheManager == null) return null;
+
+            synchronized (cacheManager.mDiskCacheLock){
+                File cacheDir = params[0];
                 try{
-                    mDiskLruCache = DiskLruCache.open(chcheDir, getAppVersion(MyApplication.getContext()), 1, DISK_CACHE_SIZE);
-                    mDiskCacheStarting = false;// Finished initialization
-                    mDiskCacheLock.notifyAll(); // Wake any waiting threads
+                    cacheManager.mDiskLruCache = DiskLruCache.open(cacheDir, cacheManager.getAppVersion(MyApplication.getContext()), 1, DISK_CACHE_SIZE);
+                    cacheManager.mDiskCacheStarting = false;// Finished initialization
+                    cacheManager.mDiskCacheLock.notifyAll(); // Wake any waiting threads
                 }catch (IOException e){
                     e.printStackTrace();
                 }
@@ -104,7 +120,7 @@ public class CacheManager {
         }
     };
 
-    //MD5编码 key ， 因为 mDiskCacheLock要求 keys must match regex [a-z0-9_-]{1,64}
+    //MD5编码 key ，因为 mDiskCacheLock要求 keys must match regex [a-z0-9_-]{1,64}
     public String hashKeyForDisk(String key) {
         String cacheKey;
         try {
@@ -129,7 +145,7 @@ public class CacheManager {
         return sb.toString();
     }
 
-    public Bitmap getBitmapFromDiskCeche(String key){
+    public Bitmap getBitmapFromDiskCache(String key){
 
         synchronized (mDiskCacheLock){
 
@@ -144,7 +160,9 @@ public class CacheManager {
                     if(snapshot != null){
                         //这里获取到的是一个DiskLruCache.Snapshot对象，调用它的getInputStream()方法就可以得到缓存文件的输入流了。同样地，getInputStream()方法也需要传一个index参数，这里传入0就好
                         InputStream in = snapshot.getInputStream(0);
-                        return BitmapFactory.decodeStream(in);
+                        Bitmap bitmap = BitmapFactory.decodeStream(in);
+                        addBitmapToMemoryCache(key, bitmap); //尝试更新memory cache
+                        return bitmap;
                     }
                 }
 
@@ -159,46 +177,58 @@ public class CacheManager {
         return null;
     }
 
+    static class addDiskCacheTask extends AsyncTask<Void, Void, Void> {
+        private final WeakReference<CacheManager> reference;
+        private final String key;
+        private final Bitmap bitmap;
+        public addDiskCacheTask(final String key, final Bitmap bitmap) {
+            super();
+            reference = new WeakReference<>(CacheManager.getInstance());
+            this.key = key;
+            this.bitmap = bitmap;
+        }
+
+        @Override
+        protected Void doInBackground(Void... param) {
+            if(reference.get() == null) return null;
+
+            CacheManager cacheManager = reference.get();
+            try {
+                String md5Key = cacheManager.hashKeyForDisk(key);
+                if(cacheManager.getBitmapFromDiskCache(md5Key) == null){
+                    DiskLruCache.Editor editor = cacheManager.mDiskLruCache.edit(md5Key);
+                    if(editor != null) {
+                        OutputStream out = editor.newOutputStream(0);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                        editor.commit();
+                    }
+                    cacheManager.mDiskLruCache.flush();
+                }
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    };
+
     /**
      *
      * @param key
      * @param bitmap
      * @param Async 是否需要后台处理, 根据具体的上层逻辑调用
      */
-    public void addBitmapToCache(final String key, final Bitmap bitmap, boolean Async){
+    public void addBitmapToDiskCache(final String key, final Bitmap bitmap, boolean Async){
+
+        if(bitmap == null)
+            return ;
 
         if(Async){
-            new AsyncTask<Void, Void, Void>(){
-                @Override
-                protected Void doInBackground(Void... params) {
-                    try {
-                        if(bitmap == null)
-                            return null;
-
-                        String md5Key = hashKeyForDisk(key);
-                        if(getBitmapFromDiskCeche(md5Key) == null){
-                            DiskLruCache.Editor editor = mDiskLruCache.edit(md5Key);
-                            if(editor != null) {
-                                OutputStream out = editor.newOutputStream(0);
-                                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                                editor.commit();
-                            }
-                            mDiskLruCache.flush();
-                        }
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-
-                    return null;
-                }
-            }.execute();
+            new addDiskCacheTask(key, bitmap).execute();
         }else {
             try {
-                if(bitmap == null)
-                    return ;
-
                 String md5Key = hashKeyForDisk(key);
-                if(getBitmapFromDiskCeche(md5Key) == null){
+                if(getBitmapFromDiskCache(md5Key) == null){
                     DiskLruCache.Editor editor = mDiskLruCache.edit(md5Key);
                     if(editor != null) {
                         OutputStream out = editor.newOutputStream(0);
@@ -216,7 +246,7 @@ public class CacheManager {
 
     private InitDiskCacheTask mDiskCacheTask = null;
     public void initCache(){
-        if(mDiskCacheStarting == true){
+        if(mDiskCacheStarting){
             // Initialize memory cache
 
             if(mMemoryCache == null){
@@ -237,7 +267,7 @@ public class CacheManager {
             }
 
             // Initialize disk cache on background thread
-            File cacheDir = getDiskCecheDir(MyApplication.getContext(), DISK_CACHE_SUBDIR);
+            File cacheDir = getDiskCacheDir(MyApplication.getContext(), DISK_CACHE_SUBDIR);
             if(mDiskCacheTask == null){
                 mDiskCacheTask = new InitDiskCacheTask();
                 mDiskCacheTask.execute(cacheDir);
@@ -287,6 +317,90 @@ public class CacheManager {
         }
     }
 
+    public Bitmap loadBitmapFromHttp(String url, int reqWidth, int reqHeight) {
+        if(Looper.myLooper() == Looper.getMainLooper()) {
+            throw new RuntimeException("can not visit network from UI thread.");
+        }
+
+        if(mDiskLruCache == null)
+            return null;
+
+        try {
+            String key = hashKeyForDisk(url);
+            DiskLruCache.Editor editor = mDiskLruCache.edit(key);
+            if(editor != null) {
+                OutputStream outputStream = editor.newOutputStream(0);
+                if(downloadUrlToStream(url, outputStream)){
+                    editor.commit();
+                }else {
+                    editor.abort();
+                }
+                mDiskLruCache.flush();
+            }
+            return loadBitmapFromDiskFromDiskCache(url, reqWidth, reqHeight);
+        }catch (IOException e) {
+            return null;
+        }
+
+    }
+
+    private Bitmap loadBitmapFromDiskFromDiskCache(String url, int reqWidth, int reqHeight) throws IOException {
+        if(Looper.myLooper() == Looper.getMainLooper()) {
+            Log.w(TAG, "load bitmap from UI thread, it's not recommended.");
+        }
+
+        if(mDiskLruCache == null) {
+            return null;
+        }
+
+        Bitmap bitmap = null;
+        String key = hashKeyForDisk(url);
+        DiskLruCache.Snapshot snapshot = mDiskLruCache.get(key);
+        FileInputStream fileInputStream = (FileInputStream)snapshot.getInputStream(0);
+        FileDescriptor fd = fileInputStream.getFD();
+        bitmap = decodeSampledBitmapFromFileDecscriptor(fd, reqWidth, reqHeight);
+        if(bitmap != null) {
+            addBitmapToMemoryCache(key, bitmap);
+        }
+
+        return bitmap;
+    }
+
+    private static final int IO_BUFFER_SIZE = 8 * 1024;
+    private   boolean downloadUrlToStream(String urlString, OutputStream outputStream) {
+        HttpURLConnection urlConnection = null;
+        BufferedOutputStream out = null;
+        BufferedInputStream in = null;
+
+        try {
+            final URL url = new URL(urlString);
+            urlConnection = (HttpURLConnection)url.openConnection();
+            in = new BufferedInputStream(urlConnection.getInputStream(), IO_BUFFER_SIZE);
+            out = new BufferedOutputStream(outputStream, IO_BUFFER_SIZE);
+            int len;
+            byte[] buf = new byte[1024];
+            while ((len = in.read(buf)) != -1) {
+                out.write(buf, 0, len);
+            }
+            return true;
+        }catch (IOException e) {
+            Log.e(TAG, "downloadBitmap failed." + e);
+        }finally {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            try {
+                out.close();
+            } catch (IOException e) { }
+
+            try {
+                in.close();
+            } catch (IOException e) { }
+        }
+        return false;
+    }
+
     public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight){
         final int width = options.outWidth;
         final int height = options.outHeight;
@@ -307,8 +421,7 @@ public class CacheManager {
     public static Bitmap decodeSampledBitmapFromPath(String path, int reqWidth, int reqHeight){
         if(!TextUtils.isEmpty(path)){
             if(reqWidth <= 0 || reqHeight <= 0){
-                Bitmap bitmap = BitmapFactory.decodeFile(path);
-                return bitmap;
+                return BitmapFactory.decodeFile(path);
             }
 
             BitmapFactory.Options options = new BitmapFactory.Options();
@@ -339,6 +452,17 @@ public class CacheManager {
         }
     }
 
+
+    public Bitmap decodeSampledBitmapFromFileDecscriptor(FileDescriptor fd, int reqWidth, int reqHeight) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFileDescriptor(fd, null, options);
+
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeFileDescriptor(fd, null, options);
+    }
 
     /**
      * 获取图片的旋转角度
@@ -382,15 +506,8 @@ public class CacheManager {
         return  newBitmap;
     }
 
-    /**
-     *
-     * @param path
-     * @param reqWidth
-     * @param reqHeight
-     * 需检查是否旋转了角度
-     * @return
-     */
-    public Bitmap addCacheData(String path, int reqWidth, int reqHeight){
+    //用特定的key将特定path的bitmap存入缓存
+    public Bitmap addCacheData(String key, String path, int reqWidth, int reqHeight, boolean isAsync){
 
         Bitmap bitmap = null;
         if(getBitmapDegree(path) == 90){ //照片翻转了90度， 此时h和w 交换位置.
@@ -399,12 +516,43 @@ public class CacheManager {
             bitmap = decodeSampledBitmapFromPath(path, reqWidth, reqHeight);
         }
 
+        //需检查是否旋转了角度
         if(getBitmapDegree(path) != 0){
             bitmap = rotateBitmaoDegree(bitmap, getBitmapDegree(path));
         }
 
-        addBitmapCache(path, bitmap, true);
+        addBitmapCache(key, bitmap, isAsync);
         return bitmap;
+    }
+
+    /**
+     *
+     * @param path
+     * @param reqWidth
+     * @param reqHeight
+     * @param isAsync
+     * @return
+     */
+    public Bitmap addCacheData(String path, int reqWidth, int reqHeight, boolean isAsync){
+
+        Bitmap bitmap = null;
+        if(getBitmapDegree(path) == 90){ //照片翻转了90度， 此时h和w 交换位置.
+            bitmap = decodeSampledBitmapFromPath(path, reqHeight, reqWidth);
+        }else {
+            bitmap = decodeSampledBitmapFromPath(path, reqWidth, reqHeight);
+        }
+
+        //需检查是否旋转了角度
+        if(getBitmapDegree(path) != 0){
+            bitmap = rotateBitmaoDegree(bitmap, getBitmapDegree(path));
+        }
+
+        addBitmapCache(path, bitmap, isAsync);
+        return bitmap;
+    }
+
+    public Bitmap addCacheData(String path, int reqWidth, int reqHeight){
+        return addCacheData(path, reqWidth, reqHeight, true);
     }
 
     /**
@@ -415,14 +563,14 @@ public class CacheManager {
     public void addBitmapCache(String path, Bitmap bitmap, boolean isAsync){
         addBitmapToMemoryCache(path, bitmap); //加入内存缓存
         synchronized (mDiskCacheLock){ //加入磁盘缓存
-            addBitmapToCache(path, bitmap, isAsync);
+            addBitmapToDiskCache(path, bitmap, isAsync);
         }
     }
 
     public Bitmap getBitmapFormCache(String path){
         Bitmap bitmap = getBitmapFromMemCache(path); //memory cache
         if(bitmap == null){
-            bitmap = getBitmapFromDiskCeche(path); //disk cache 这步最好放在后台线程中
+            bitmap = getBitmapFromDiskCache(path); //disk cache
         }
         return bitmap;
     }

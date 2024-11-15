@@ -3,13 +3,8 @@ package com.example.milanac007.pickerandpreviewphoto;
 import android.app.Application;
 import android.content.Context;
 
-import com.tdr.tdrsipim.App;
+import com.milanac007.demo.videocropdemo.App;
 
-import org.ffmpeg.android.FfmpegController;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -18,7 +13,7 @@ import java.lang.reflect.Method;
 public class MyApplication extends Application {
 
     private static Context mContext = null;
-    private App mApp; //VideoCrop的Application
+    private App moduleApp; //VideoCrop的Application
 
     public static void setContext(Context context){
         mContext = context;
@@ -33,12 +28,13 @@ public class MyApplication extends Application {
         super.onCreate();
         mContext = getApplicationContext();
 
-        if(mApp != null) {
-            mApp.onCreate(); //用于执行module的一些自定义初始化操作
+        if(moduleApp != null) {
+            moduleApp.onCreate(); //用于执行module的一些自定义初始化操作
         }
 
         initCache();
     }
+
 
     private void  initCache() {
         new Thread(new Runnable() {
@@ -48,6 +44,16 @@ public class MyApplication extends Application {
 
             }
         }).start();
+    }
+
+    public void closeCache() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                CacheManager.getInstance().closeDiskCache();
+            }
+        }).start();
+
     }
 
     /**
@@ -60,13 +66,13 @@ public class MyApplication extends Application {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
 
-        mApp = getModuleApplicationInstance(this);
+        moduleApp = getModuleApplicationInstance(this);
         try {
             //通过反射调用moduleApplication的attach方法
             Method method = Application.class.getDeclaredMethod("attach", Context.class);
             if(method != null) {
                 method.setAccessible(true);
-                method.invoke(mApp, getBaseContext());
+                method.invoke(moduleApp, getBaseContext());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,12 +81,12 @@ public class MyApplication extends Application {
 
     private App getModuleApplicationInstance(Context context) {
         try {
-            if(mApp == null) {
+            if(moduleApp == null) {
                 ClassLoader classLoader = context.getClassLoader();
                 if(classLoader != null) {
                     Class<?> aClass = classLoader.loadClass(App.class.getName());
                     if(aClass != null) {
-                        mApp = (App)aClass.newInstance();
+                        moduleApp = (App)aClass.newInstance();
                     }
                 }
             }
@@ -88,7 +94,7 @@ public class MyApplication extends Application {
             e.printStackTrace();
         }
 
-        return mApp;
+        return moduleApp;
     }
 
 

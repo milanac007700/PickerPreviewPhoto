@@ -14,10 +14,16 @@
         android:text="123"
         android:visibility="gone" />
 
-    <SurfaceView
-        android:id="@+id/preview_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+<!--    <SurfaceView-->
+<!--        android:id="@+id/preview_view"-->
+<!--        android:layout_width="fill_parent"-->
+<!--        android:layout_height="fill_parent"-->
+<!--        android:layout_gravity="center" />-->
+
+    <TextureView
+        android:id="@+id/preview_textureview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_gravity="center" />
 
     <com.google.zxing.qrcode.view.ViewfinderView

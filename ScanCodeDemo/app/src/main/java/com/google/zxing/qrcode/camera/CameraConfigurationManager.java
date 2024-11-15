@@ -66,7 +66,44 @@ final class CameraConfigurationManager {
 	  }
   }
 
+  void initFromCameraParameters2(Camera camera) {
+    Camera.Parameters parameters = camera.getParameters();
+    previewFormat = parameters.getPreviewFormat();
+    previewFormatString = parameters.get("preview-format");
+    WindowManager manager = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+    Display display = manager.getDefaultDisplay();
+    int width = display.getWidth();
+    int height = display.getHeight();
+    screenResolution = new Point(width,height);
+    android.util.Size bestPreviewSize = getBestPreviewSize(false, camera.getParameters());
+    cameraResolution = new Point(bestPreviewSize.getWidth(), bestPreviewSize.getHeight());
+  }
 
+  private android.util.Size getBestPreviewSize(boolean mIsHorizonal, Camera.Parameters parameters) {
+    int screenWidth = screenResolution.x;
+    int screenHeight = screenResolution.y;
+    int viewWidth = mIsHorizonal ? screenWidth: screenHeight;
+    int viewHeight = mIsHorizonal ? screenHeight: screenWidth;
+    List<Camera.Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
+    int bestPreviewWidth = 1920;
+    int bestPreviewHeight = 1080;
+    int diffs = Integer.MAX_VALUE;
+    for (Camera.Size previewSize: supportedPreviewSizes) {
+      int newDiffs = Math.abs(previewSize.width - viewWidth) + Math.abs(previewSize.height - viewHeight);
+      if (newDiffs == 0) {
+        bestPreviewWidth = previewSize.width;
+        bestPreviewHeight = previewSize.height;
+        break;
+      }
+      if (diffs > newDiffs) {
+        bestPreviewWidth = previewSize.width;
+        bestPreviewHeight = previewSize.height;
+        diffs = newDiffs;
+      }
+    }
+    Log.i(TAG, "最佳预览宽高：" + bestPreviewWidth + ", " + bestPreviewHeight);
+    return new android.util.Size(bestPreviewWidth, bestPreviewHeight);
+  }
 
   /**
    * Sets the camera up to take preview images which are used for both preview and decoding.
@@ -94,6 +131,15 @@ final class CameraConfigurationManager {
     setFlash(parameters);
     setZoom(parameters);
     //setSharpness(parameters);
+    camera.setParameters(parameters);
+  }
+
+  void setDesiredCameraParameters2(Camera camera) {
+    Camera.Parameters parameters = camera.getParameters();
+    camera.setDisplayOrientation(90);
+    parameters.setPreviewSize(cameraResolution.x,cameraResolution.y);
+    setFlash(parameters);
+    setZoom(parameters);
     camera.setParameters(parameters);
   }
 

@@ -1,5 +1,6 @@
 package com.example.milanac007.pickerandpreviewphoto;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -11,13 +12,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.GridView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -63,11 +67,11 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
         return MAX_NUM;
     }
 
-    public int getmSrceenWidth(){
+    public int getSrceenWidth(){
         return mSrceenWidth;
     }
 
-    public int getmScreenHeight(){
+    public int getScreenHeight(){
         return mScreenHeight;
     }
 
@@ -88,7 +92,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
     }
 
 
-    public class AlbumImgData{
+    static public class AlbumImgData{
         String id;
         String path;
         String name;
@@ -113,7 +117,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
         preview_photos = (TextView)findViewById(R.id.preview_photos);
         send_photos = (TextView)findViewById(R.id.send_photos);
 
-        View operate_layout = findViewById(R.id.operate_layout);
+        ViewGroup operate_layout = findViewById(R.id.operate_layout);
         operate_layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -134,6 +138,8 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
     }
 
     private void setData(){
+        if(adapter != null) return;
+
         Uri photoAlbumUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         ContentResolver contentResolver = getContentResolver();
         String[] project = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA, MediaStore.Images.Media.DISPLAY_NAME, MediaStore.Images.Media.SIZE};
@@ -148,10 +154,10 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
         imgDatas.add(imgData);
 
         while (cursor.moveToNext()){
-            String fileId = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-            String filePath = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            String fileName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-            long fileSize = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.SIZE));
+            @SuppressLint("Range") String fileId = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media._ID));
+            @SuppressLint("Range") String filePath = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            @SuppressLint("Range") String fileName = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+            @SuppressLint("Range") long fileSize = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media.SIZE));
 
             imgData = new AlbumImgData();
             imgData.id = fileId;
@@ -160,7 +166,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
             imgData.size = fileSize;
             imgDatas.add(imgData);
 
-//            Log.e(TAG, fileId + ", " + filePath + ", " + fileName + ", " + fileSize);
+//            Log.i(TAG, fileId + ", " + filePath + ", " + fileName + ", " + fileSize);
         }
         cursor.close();
 
@@ -320,7 +326,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
      *
      * 总而言之，就是Android不再允许在app中把file://Uri暴露给其他app，包括但不局限于通过Intent或ClipData等方法。
      *
-     * 解决方案：谷歌提供了FileProvider，使用它可以生成content://乌里来替代file://URI。
+     * 解决方案：谷歌提供了FileProvider，使用它可以生成content://URI 来替代 file://URI。
      * FileProvider会隐藏共享文件的真实路径，将它转换成content://开放的路径，因此还需要设定转换的规则。
      * android:resource="@xml/provider_paths"这个属性指定了规则所在的文件。
      *
@@ -329,17 +335,19 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
      *
      * TODO 适配 API30(Android10作用域存储)，否则：java.io.FileNotFoundException: open failed: EACCES (Permission denied)  /storage/emulated/0/CustomCamera/oxmRwHPoQP1/temp/202211811319_temp.jpg: open failed: EACCES (Permission denied)
      */
-    public void cameraPhoto(){
+    public void cameraPhoto() {
+//        String fileName = Environment.getExternalStorageDirectory() + "/CustomCamera/"  + UUID.randomUUID().toString() + ".jpg";
         String fileName = CommonFunction.getDirUserTemp() + UUID.randomUUID().toString() + ".jpg";
         mCurrentCameraFile = new File(fileName);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         Uri photoUri = null;
         if(Build.VERSION.SDK_INT < 24) {
-            Uri.fromFile(mCurrentCameraFile);
+            photoUri = Uri.fromFile(mCurrentCameraFile);
         }else {
             photoUri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", mCurrentCameraFile);
         }
+        Log.i(TAG, "photoUri: " + photoUri);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
         startActivityForResult(intent, PHOTO_CODE);
     }
@@ -370,7 +378,6 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
                     }
                     notifyResult(results, true);
                 }
-
             }
         }else if(requestCode == CropHeaderActivity.CODE){
             if(resultCode == RESULT_OK){
@@ -379,7 +386,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
             }
         }else if(requestCode == PHOTO_CODE){ //拍照
             if(resultCode == RESULT_OK){
-                new BitmapWorkerTask().execute(mCurrentCameraFile.getPath());
+                new BitmapWorkerTask(PickerAlbumActivity.this).execute(mCurrentCameraFile.getPath());
             }
         }else if(requestCode == PHOTO_PREVIEW_CODE){ //拍照预览
             if(resultCode == RESULT_OK){
@@ -389,50 +396,65 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
                     notifyResult(mSelectedPaths, true);
                 }
             }
-
         }
     }
 
 
-    class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap>{
+    /**
+     * static内部类+WeakReference 防止页面退出时，非静态内部类正在执行耗时操作、仍持有当前页面的Context而导致内存泄漏
+     */
+    static class BitmapWorkerTask extends AsyncTask<String, Void, Bitmap>{
 
         private String path;
         private long fileSize;
 
-        public BitmapWorkerTask(){
-
+        private final WeakReference<PickerAlbumActivity> activityWeakReference;
+        public BitmapWorkerTask(PickerAlbumActivity context){
+            super();
+            activityWeakReference = new WeakReference<PickerAlbumActivity>(context);
         }
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            CommonFunction.showProgressDialog(PickerAlbumActivity.this, "处理中...");
+            PickerAlbumActivity pickerAlbumActivity = activityWeakReference.get();
+            if(pickerAlbumActivity.isFinishing()) return;
+
+            CommonFunction.showProgressDialog(pickerAlbumActivity, "处理中...");
         }
 
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(String... params) {
+            PickerAlbumActivity pickerAlbumActivity = activityWeakReference.get();
+            if(pickerAlbumActivity.isFinishing()) return null;
+
             path = params[0];
             fileSize = new File(path).length();
 
-            return  CacheManager.getInstance().addCacheData(path,mSrceenWidth/3,mScreenHeight/3);//加入内存、磁盘缓存
+            return  CacheManager.getInstance().addCacheData(path,pickerAlbumActivity.mSrceenWidth/3,pickerAlbumActivity.mScreenHeight/3);//加入内存、磁盘缓存
+        }
+
+        @Override
+        protected void onCancelled() {
+            CommonFunction.dismissProgressDialog();
+            CommonFunction.showToast("已取消");
         }
 
         @Override
         protected void onPostExecute(Bitmap bitmap) {
             CommonFunction.dismissProgressDialog();
 
-            if(isCancelled()){
-                bitmap = null;
-            }
+            PickerAlbumActivity pickerAlbumActivity = activityWeakReference.get();
+            if(pickerAlbumActivity.isFinishing()) return ;
 
             if(bitmap != null){
                 Intent intent = null;
 
-                if(mMode == PICKER_HEADICO_FROM_ALBUM_CODE){
-                    intent = new Intent(PickerAlbumActivity.this, CropHeaderActivity.class);
+                if(pickerAlbumActivity.mMode == PICKER_HEADICO_FROM_ALBUM_CODE){
+                    intent = new Intent(pickerAlbumActivity, CropHeaderActivity.class);
                 }else {
-                    intent = new Intent(PickerAlbumActivity.this, PhotoPreviewActivity.class);
+                    intent = new Intent(pickerAlbumActivity, PhotoPreviewActivity.class);
                 }
 
                 ArrayList<String> selectedImgs = new ArrayList<String>();
@@ -440,7 +462,7 @@ public class PickerAlbumActivity extends Activity implements View.OnClickListene
                 intent.putExtra(SELECTED_KEY, selectedImgs);
                 long[] fileSizes = new long[]{fileSize};
                 intent.putExtra("size", fileSizes);
-                startActivityForResult(intent, PHOTO_PREVIEW_CODE);
+                pickerAlbumActivity.startActivityForResult(intent, PHOTO_PREVIEW_CODE);
             }
         }
     }

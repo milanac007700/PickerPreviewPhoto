@@ -3,17 +3,23 @@ apply plugin: 'com.android.library'
 
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "25.0.1"
+    compileSdkVersion 32
+    buildToolsVersion "31.0.0"
     defaultConfig {
-//        applicationId "test.milanac007.com.videocropdemo"
+//        applicationId "com.milanac007.demo.videocropdemo"
         minSdkVersion 16
-        targetSdkVersion 23
+        targetSdkVersion 32
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+//                abiFilters "armeabi-v7a"
+            abiFilters "arm64-v8a"
+        }
     }
     buildTypes {
+        debug {
+            minifyEnabled false
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -22,9 +28,7 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-//    compile 'com.android.support:appcompat-v7:23.3.0'
-//    compile 'com.android.support:support-v4:23.3.0'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    compile project(':androidffmpeglibrary')
+    implementation project(':FFmpeg')
 }

@@ -164,6 +164,16 @@ public class PhotoPreviewActivity extends Activity implements View.OnClickListen
 
 
     @Override
+    public void onBackPressed() {
+        if(mSelectedPaths != null){
+            Intent intent = new Intent();
+            intent.putStringArrayListExtra(SELECTED_KEY, mSelectedPaths);
+            setResult(RESULT_OK, intent);
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     public void onClick(View v) {
 
         if(v.getId() == R.id.back){

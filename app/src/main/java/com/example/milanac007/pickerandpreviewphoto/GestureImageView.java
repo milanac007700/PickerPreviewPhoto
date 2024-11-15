@@ -9,7 +9,6 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
@@ -19,9 +18,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
-import android.widget.ImageView;
 import android.widget.Scroller;
-import android.widget.Toast;
 
 /**
  * Created by milanac007 on 2017/2/11.
@@ -625,8 +622,7 @@ public class GestureImageView extends androidx.appcompat.widget.AppCompatImageVi
         Resources resources = getResources();
         maskColor = resources.getColor(com.example.milanac007.pickerandpreviewphoto.R.color.viewfinder_mask);
         frameColor = resources.getColor(com.example.milanac007.pickerandpreviewphoto.R.color.viewfinder_frame);
-
-        mMaskRect = new Rect(ScreenW/2-ScreenH/4, ScreenH/4, ScreenW/2+ScreenH/4, ScreenH*3/4);
+        mMaskRect = new Rect(Math.max(ScreenW/2 - ScreenH/4, 0), ScreenH/4, Math.min(ScreenW/2 + ScreenH/4, ScreenW), ScreenH * 3/4);
     }
 
     public Bitmap outputMaskBitmap(){

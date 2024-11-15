@@ -16,9 +16,6 @@
 
 package com.google.zxing.qrcode.view;
 
-import java.util.Collection;
-import java.util.HashSet;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -32,6 +29,9 @@ import android.view.View;
 import com.google.zxing.ResultPoint;
 import com.google.zxing.qrcode.camera.CameraManager;
 import com.milanac007.scancode.R;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * This view is overlaid on top of the camera preview. It adds the viewfinder
@@ -85,6 +85,9 @@ public final class ViewfinderView extends View {
 	private int n = 0;
 	@Override
 	public void onDraw(Canvas canvas) {
+		if (CameraManager.get() == null) {
+			return;
+		}
 		Rect frame = CameraManager.get().getFramingRect();
 		if (frame == null) {
 			return;

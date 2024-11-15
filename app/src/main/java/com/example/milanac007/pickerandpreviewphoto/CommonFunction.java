@@ -6,12 +6,20 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
+import android.os.Build;
 import android.os.Environment;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.DisplayMetrics;
+import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.milanac007.demo.videocropdemo.library.HandlerPost;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -29,6 +37,21 @@ import java.util.regex.Pattern;
 public class CommonFunction {
 
     public static final String APPLICATION_PACKAGE_TAG = "CommonFunction";
+    /**显示加载的动画
+     * @param show
+     * @param loading
+     * @param loadingAnim
+     */
+    public static void showLoadingAnim(boolean show, ImageView loading, Animation loadingAnim){
+        if (show) {
+            loading.setVisibility(View.VISIBLE);
+            loading.startAnimation(loadingAnim);
+        } else {
+            loading.setVisibility(View.INVISIBLE);
+            loading.clearAnimation();
+        }
+    }
+
 
 
     public static boolean isStringEmpty(Object obj) {
@@ -88,7 +111,7 @@ public class CommonFunction {
     }
 
 
-    public static String getDir() {
+    public static String getRootDir() {
 
         if (TextUtils.isEmpty(SDDir)) {
             initExtStorageDir();
@@ -98,7 +121,7 @@ public class CommonFunction {
         File f = new File(dir);
         if (!f.exists()) {
             boolean ret = f.mkdirs();
-            Logger.getLogger().i("makedir ret=%s %s", ret?"true":"false", dir);
+            Logger.getLogger().i("makedir ret=%s, %s", ret?"true":"false", dir);
         }
 
         return dir;
@@ -109,24 +132,18 @@ public class CommonFunction {
 
     protected static void initExtStorageDir() {
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            File path = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/CustomCamera/");
-            if (path.exists() && path.isDirectory()) {
-                SDDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-                return;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { //TODO Android10 作用域存储
+//                SDDir = Environment.getExternalStorageDirectory().getAbsolutePath(); //java.io.FileNotFoundException: /storage/emulated/0/CustomCamera/...: open failed: ENOENT (No such file or directory)
+//                SDDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).getAbsolutePath();
+                SDDir = MyApplication.getContext().getExternalFilesDir(null).getAbsolutePath();
             } else {
-                boolean ret = path.mkdirs();
-                if (ret) {
-                    SDDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-                    return;
-                }
+                SDDir = Environment.getExternalStorageDirectory().getAbsolutePath();
             }
-
         }
     }
 
-
     private static String makeDirPath(String folder, String userUuid) {
-        String dir = getDir();
+        String dir = getRootDir();
 
         if (!TextUtils.isEmpty(userUuid)) {
             dir += userUuid;
@@ -139,7 +156,7 @@ public class CommonFunction {
         File f = new File(dir);
         if (!f.exists()) {
             boolean ret = f.mkdirs();
-            android.util.Log.i(APPLICATION_PACKAGE_TAG, "makedir ret=" + ret + dir);
+            Log.i(APPLICATION_PACKAGE_TAG, "makedir ret=" + ret + dir);
         }
 
         return dir;
@@ -147,11 +164,11 @@ public class CommonFunction {
 
 
     public static String getUserDBPath() {
-        return makeDirPath("db", "oxmRwHPoQP1");
+        return makeDirPath("db", "");
     }
 
     public static String getDirUserTemp() {
-        return makeDirPath("temp", "oxmRwHPoQP1");
+        return makeDirPath("temp", "");
     }
 
     // 示例：http://file01.yugusoft.com/M00/00/7D/OkTuVVOwxrOAHsffAAAiIWbby2Q947.jpg
@@ -193,31 +210,44 @@ public class CommonFunction {
 
     private static Toast mToast = null;
 
-    public static final Toast showToast(int strId) {
-
-        if(mToast == null){
-            mToast = Toast.makeText(MyApplication.getContext(), strId, Toast.LENGTH_SHORT);
-        }else {
-            mToast.setText(strId);
-            mToast.setDuration(Toast.LENGTH_SHORT);
+    public static Toast getToast(String str){
+        //暂时解决快速调用该方法，有些版本的手机(华为 Android 10)会不显示toast的bug
+        if(mToast != null) {
+            mToast.cancel();
+            mToast = null;
         }
-
-        mToast.show();
+        //解决小米手机 toast带应用名称的问题
+//        mToast = Toast.makeText(App.getContext(), str, Toast.LENGTH_SHORT);
+        mToast = Toast.makeText(MyApplication.getContext(), "", Toast.LENGTH_SHORT);
+        mToast.setText(str);
         return mToast;
     }
 
-    public static final Toast showToast(String msg) {
+    public static final void showToast(final String msg) {
+        Log.i(APPLICATION_PACKAGE_TAG, String.format("showToast(final String msg): Looper.getMainLooper().getThread().getId() = %d, Thread.currentThread().getId() = %d",
+                Looper.getMainLooper().getThread().getId(), Thread.currentThread().getId()));
 
-        if(mToast == null){
-            mToast = Toast.makeText(MyApplication.getContext(), msg, Toast.LENGTH_SHORT);
+        if(Thread.currentThread() != Looper.getMainLooper().getThread()){
+            new HandlerPost(0, true){
+                @Override
+                public void doAction() {
+                    if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){//Android8.0以前的版本有bug：没有catch BadTokenException
+                        ToastCompat.getToast(msg).show();
+                        return;
+                    }
+                    getToast(msg).show();
+                }
+            };
         }else {
-            mToast.setText(msg);
-            mToast.setDuration(Toast.LENGTH_SHORT);
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+                ToastCompat.getToast(msg).show();
+                return;
+            }
+            getToast(msg).show();
         }
-
-        mToast.show();
-        return mToast;
     }
+
+ 
 
     public static final void hideToast(){
         if(mToast != null){
@@ -226,6 +256,40 @@ public class CommonFunction {
         }
     }
 
+    /**
+     * 全局显示等待框
+     * @param context
+     * @param msg
+     * @return
+     */
+    private static ProgressDialog progressDialog = null;
+    public static void showProgressDialog(Context context, String msg) {
+        if(progressDialog == null){
+            progressDialog = new ProgressDialog(context);
+        }
+
+        progressDialog.setMessage(msg);
+        progressDialog.setCancelable(false);
+
+        try {
+            progressDialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void dismissProgressDialog() {
+        if (progressDialog == null) {
+            return;
+        }
+        try {
+            progressDialog.dismiss();
+            progressDialog = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     //获取时位值
     public static int getHourOfDate(Date date){
@@ -563,41 +627,6 @@ public class CommonFunction {
         Method method = ownerClass.getMethod(methodName, argsClass);
 
         return method.invoke(owner, args);
-    }
-
-    /**
-     * 全局显示等待框
-     * @param context
-     * @param msg
-     * @return
-     */
-    private static ProgressDialog progressDialog = null;
-    public static void showProgressDialog(Context context, String msg) {
-        if(progressDialog == null){
-            progressDialog = new ProgressDialog(context);
-        }
-
-        progressDialog.setMessage(msg);
-        progressDialog.setCancelable(false);
-
-        try {
-            progressDialog.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static void dismissProgressDialog() {
-        if (progressDialog == null) {
-            return;
-        }
-        try {
-            progressDialog.dismiss();
-            progressDialog = null;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

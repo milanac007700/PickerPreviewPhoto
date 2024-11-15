@@ -17,8 +17,9 @@ package="com.example.milanac007.pickerandpreviewphoto">
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
     android:requestLegacyExternalStorage="true"
-    tools:replace="android:name,android:icon,android:label,android:theme">
-
+    tools:replace="android:name,android:icon,android:label,android:requestLegacyExternalStorage">
+<!--    ,android:theme-->
+<!--    E/ThemeUtils: View class com.milanac007.demo.videocropdemo.ui.VideoCaptureButton is an AppCompat widget that can only be used with a Theme.AppCompat theme (or descendant).-->
     <provider
         android:authorities="${applicationId}.fileprovider"
         android:name="androidx.core.content.FileProvider"
@@ -26,10 +27,11 @@ package="com.example.milanac007.pickerandpreviewphoto">
         android:grantUriPermissions="true">
         <meta-data
             android:name="android.support.FILE_PROVIDER_PATHS"
-            android:resource="@xml/provider_path" />
+            android:resource="@xml/provider_paths" />
     </provider>
     
-    <activity android:name=".HomePageActivity" android:screenOrientation="portrait">
+    <activity android:name=".HomePageActivity" android:screenOrientation="portrait"
+        android:exported="true">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
